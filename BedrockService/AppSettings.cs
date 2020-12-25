@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.Collections.Generic;
 using System.Configuration;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Serialization;
@@ -19,13 +13,13 @@ namespace BedrockService
 
         protected override void DeserializeSection(XmlReader reader)
         {
-            this.document = XDocument.Load(reader);
+            document = XDocument.Load(reader);
         }
 
         protected override object GetRuntimeObject()
         {
             // This is cached by ConfigurationManager, so no point in duplicating it to stop other people from modifying it
-            return this.document;
+            return document;
         }
     }
 
@@ -42,51 +36,31 @@ namespace BedrockService
             Instance = (AppSettings)serializer.Deserialize(document.CreateReader());
         }
 
-        // Add your custom fields in here....
-
-        
-
-        [XmlElement("ServerConfig")]
         public List<ServerConfig> ServerConfig { get; set; }
 
-        [XmlElement("BackupConfig")]
-        public BackupConfig BackupConfig { get; set; }
-       
     }
 
     public class ServerConfig
     {
         public string ServerName { get; set; }
-
-        public string ServerPort4 {  get; set; }
-
+        public string ShortName { get; set; }
+        public string ServerPort4 { get; set; }
         public string ServerPort6 { get; set; }
         public string BedrockServerExeLocation { get; set; }
+        public string BedrockServerExeName { get; set; }
+        public string BedrockVerInfo { get; set; }
+        public string BedrockServerConfigFile { get; set; }
+        public string AcceptedMojangLic { get; set; }
         public string BackupFolderName { get; set; }
         public bool Primary { get; set; }
 
-       
         public Command StartupCommands { get; set; }
 
         public int WCFPortNumber { get; set; }
     }
 
-    public class BackupConfig
-    {
-        public bool BackupOn { get; set; }
-        
-        [Obsolete("This property will be removed in future and replaced with BackupIntervalCron")]
-        public long BackupIntervalMinutes { get; set; }
-
-        public string BackupIntervalCron { get; set; }
-    }
-
     public class Command
     {
-        [XmlElement("CommandText")]
         public List<string> CommandText { get; set; }
     }
-
-
-   
 }

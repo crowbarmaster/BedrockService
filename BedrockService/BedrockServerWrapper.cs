@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Timers;
 using Topshelf;
 using Topshelf.Logging;
 
@@ -20,37 +17,39 @@ namespace BedrockService
         Thread outputThread;
         Thread errorThread;
         Thread inputThread;
+        Thread WCFServerThread;
+        Thread watchDogThread;
+        WCFConsoleServer wcfConsoleServer;
         string loggedThroughput;
         StringBuilder consoleBufferServiceOutput = new StringBuilder();
         bool serverStarted = false;
-        
+
         const string worldsFolder = "worlds";
-        const string startupMessage = "INFO] Server started.";
-        public BedrockServerWrapper( ServerConfig serverConfig, BackupConfig backupConfig)
+        const string startupMessage = "[INFO] Server started.";
+        HostControl hostController;
+        public BedrockServerWrapper(ServerConfig serverConfig)
         {
-            
+
             ServerConfig = serverConfig;
-            BackupConfig = backupConfig;
-           
+
         }
         public BackgroundWorker Worker { get; set; }
         public ServerConfig ServerConfig { get; set; }
 
-        public BackupConfig BackupConfig { get; set; }
         public bool BackingUp { get; set; }
         public bool Stopping { get; set; }
 
-        
+
 
         public void StopControl()
         {
             if (!(process is null))
             {
                 _log.Info("Sending Stop to Bedrock . Process.HasExited = " + process.HasExited.ToString());
-               
+
                 process.StandardInput.WriteLine("stop");
                 while (!process.HasExited) { }
-                
+
                 //_log.Info("Sent Stop to Bedrock . Process.HasExited = " + process.HasExited.ToString());
             }
             if (!(Worker is null))
@@ -89,9 +88,10 @@ namespace BedrockService
 
         public void RunServer(HostControl hostControl)
         {
+            hostController = hostControl;
             try
             {
-                if (File.Exists(ServerConfig.BedrockServerExeLocation))
+                if (File.Exists(ServerConfig.BedrockServerExeLocation + ServerConfig.BedrockServerExeName))
                 {
                     // Fires up a new process to run inside this one
                     process = Process.Start(new ProcessStartInfo
@@ -101,7 +101,7 @@ namespace BedrockService
                         RedirectStandardInput = true,
                         RedirectStandardOutput = true,
                         WindowStyle = ProcessWindowStyle.Hidden,
-                        FileName = ServerConfig.BedrockServerExeLocation
+                        FileName = ServerConfig.BedrockServerExeLocation + ServerConfig.BedrockServerExeName
                     });
                     process.PriorityClass = ProcessPriorityClass.RealTime;
 
@@ -116,31 +116,33 @@ namespace BedrockService
                     errorThread = new Thread(errorReader) { Name = "ChildIO Error", Priority = ioPriority };
                     inputThread = new Thread(inputReader) { Name = "ChildIO Input", Priority = ioPriority };
 
-                    // Set as background threads (will automatically stop when application ends)
+                    //Set as background threads (will automatically stop when application ends)
                     outputThread.IsBackground = errorThread.IsBackground
                         = inputThread.IsBackground = true;
 
-                    // Start the IO threads
+                    //Start the IO threads
                     outputThread.Start(process);
                     errorThread.Start(process);
                     inputThread.Start(process);
 
-                    _log.Debug("Starting WCF server");
-                    var wcfConsoleServer = new WCFConsoleServer(process, GetCurrentConsole, ServerConfig.WCFPortNumber);
+                    WCFServerThread = new Thread(new ThreadStart(WCFThread));
+                    WCFServerThread.Start();
 
-                    _log.Debug("Before process.WaitForExit()");
-                    process.WaitForExit();
-                    _log.Debug("After process.WaitForExit()");
-                    
-                    process = null;
-
-                    _log.Debug("Stop WCF service");
-                    wcfConsoleServer.Close();
-                    GC.Collect();
+                    if (watchDogThread == null || !watchDogThread.IsAlive)
+                    {
+                        try
+                        {
+                            watchDogThread = new Thread(new ThreadStart(Monitor));
+                            watchDogThread.Start();
+                        }
+                        catch (Exception ex)
+                        {
+                        }
+                    }
                 }
                 else
                 {
-                    _log.Error("The Bedrock Server is not accessible at " + ServerConfig.BedrockServerExeLocation + "\r\nCheck if the file is at that location and that permissions are correct.");
+                    _log.Error("The Bedrock Server is not accessible at " + ServerConfig.BedrockServerExeLocation + ServerConfig.BedrockServerExeName + "\r\nCheck if the file is at that location and that permissions are correct.");
                     hostControl.Stop();
                 }
             }
@@ -151,6 +153,70 @@ namespace BedrockService
 
             }
 
+        }
+
+        private void WCFThread()
+        {
+            try
+            {
+                Console.WriteLine("Starting WCF server");
+
+                wcfConsoleServer = new WCFConsoleServer(process, GetCurrentConsole, ServerConfig.WCFPortNumber);
+                _log.Debug("Before process.WaitForExit()");
+                process.WaitForExit();
+                _log.Debug("After process.WaitForExit()");
+
+                process = null;
+
+                _log.Debug("Stop WCF service");
+                wcfConsoleServer.Close();
+                GC.Collect();
+            }
+            catch (ThreadAbortException abort)
+            {
+                Console.WriteLine($"WCF Thread reports {abort.Message}");
+            }
+        }
+
+        private bool MonitoredAppExists(string monitoredAppName)
+        {
+            try
+            {
+                Process[] processList = Process.GetProcessesByName(monitoredAppName);
+                if (processList.Length == 0)
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("ApplicationWatcher MonitoredAppExists Exception: " + ex.StackTrace);
+                return true;
+            }
+        }
+
+        public void Monitor()
+        {
+            if (!MonitoredAppExists(ServerConfig.BedrockServerExeName.Substring(0, ServerConfig.BedrockServerExeName.Length - 4)))
+            {
+                StopControl();
+                if (wcfConsoleServer != null)
+                {
+                    wcfConsoleServer.Abort();
+                    WCFServerThread.Abort();
+                    WCFServerThread = null;
+                }
+                StartControl(hostController);
+            }
+            else
+            {
+                Thread.Sleep(5000);
+                Monitor();
+            }
         }
 
         /// <summary>
@@ -173,19 +239,24 @@ namespace BedrockService
                         outstream.Flush();
                         consoleBufferServiceOutput.Append(Encoding.ASCII.GetString(buffer).Substring(0, len).Trim());
 
-                        if(consoleBufferServiceOutput.Length > 10000000)
+                        if (consoleBufferServiceOutput.Length > 10000000)
                         {
                             consoleBufferServiceOutput = new StringBuilder(consoleBufferServiceOutput.ToString().Substring(consoleBufferServiceOutput.Length - 11000000));
                         }
                         _log.Debug(Encoding.ASCII.GetString(buffer).Substring(0, len).Trim());
-                        
+
                         if (!serverStarted)
                         {
                             loggedThroughput += Encoding.ASCII.GetString(buffer).Substring(0, len).Trim();
                             if (loggedThroughput.Contains(startupMessage))
                             {
                                 serverStarted = true;
-                                RunStartupCommands();
+
+                                if (ServerConfig.StartupCommands != null)
+                                {
+                                    RunStartupCommands();
+                                }
+
                             }
                         }
                     }
@@ -246,7 +317,7 @@ namespace BedrockService
 
                 BackingUp = true;
                 FileInfo exe = new FileInfo(ServerConfig.BedrockServerExeLocation);
-                
+
                 if (ServerConfig.BackupFolderName.Length > 0)
                 {
                     DirectoryInfo backupTo;
@@ -262,12 +333,12 @@ namespace BedrockService
                     {
                         backupTo = exe.Directory.CreateSubdirectory(ServerConfig.BackupFolderName);
                     }
-                    
+
                     var sourceDirectory = exe.Directory.GetDirectories().Single(t => t.Name == worldsFolder);
                     var targetDirectory = backupTo.CreateSubdirectory($"{worldsFolder}{DateTime.Now.ToString("yyyyMMddhhmmss")}");
                     CopyFilesRecursively(sourceDirectory, targetDirectory);
-                        
-                    
+
+
                 }
             }
             catch (Exception e)

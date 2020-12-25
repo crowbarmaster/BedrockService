@@ -1,13 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.ServiceModel;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace BedrockService
 {
@@ -37,8 +31,10 @@ namespace BedrockService
             var baseAddress = new Uri($"net.tcp://localhost:{portNumber}/MinecraftConsole");
 
             _serviceHost = new ServiceHost(typeof(WCFConsoleServer), baseAddress);
+
             _serviceHost.AddServiceEndpoint(typeof(IWCFConsoleServer), binding, baseAddress);
             _serviceHost.Open();
+
         }
         public string GetConsole()
         {
@@ -58,6 +54,12 @@ namespace BedrockService
         public void Close()
         {
             _serviceHost.Close();
+        }
+
+        public void Abort()
+        {
+            _serviceHost.Abort();
+            _serviceHost = null;
         }
     }
 }
