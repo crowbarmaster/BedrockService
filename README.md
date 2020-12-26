@@ -158,6 +158,23 @@ StartCmds are passable commandline startup options to this server. Each command 
 
 CommandDescription is meaningless, and can be the same for each, or unique to you liking.
 
+Service installation is simmilar to before, however you need not set permissions on the MC server folder, since it will be created by the service.
+
+1.  You need to give permissions to SYSTEM to Modify the directory where BedrockService is located.
+
+2.  Start a command prompt console with admin priviledges and navigate to the directory where you unzipped BedrockService.  
+```
+    Type: bedrockservice install   
+    then
+    Type: bedrockservice start
+```    
+If you need to uninstall BedrockService Start a command prompt console with admin priviledges and navigate to the directory where you unzipped BedrockService.
+```
+    Type: bedrockservice stop
+    then
+    Type: bedrockservice uninstall
+```    
+
 **************************************************************************************
 
 Original Readme:

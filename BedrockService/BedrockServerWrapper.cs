@@ -201,7 +201,7 @@ namespace BedrockService
 
         public void Monitor()
         {
-            if (!MonitoredAppExists(ServerConfig.BedrockServerExeName.Substring(0, ServerConfig.BedrockServerExeName.Length - 4)))
+            if (!MonitoredAppExists(ServerConfig.BedrockServerExeName.Substring(0, ServerConfig.BedrockServerExeName.Length - 4)) && !Stopping)
             {
                 StopControl();
                 if (wcfConsoleServer != null)
@@ -215,7 +215,10 @@ namespace BedrockService
             else
             {
                 Thread.Sleep(5000);
-                Monitor();
+                if (!Stopping)
+                {
+                    Monitor();
+                }
             }
         }
 
