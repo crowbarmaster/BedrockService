@@ -117,9 +117,8 @@ namespace BedrockService
         {
             string[] Service = new string[]
             {
-                @"BedrockServerExeLocation=D:\MCSRV\MC1\",
+                @"BedrockServerExeLocation=C:\Program Files (x86)\Minecraft Bedrock Server Launcher\Servers\Server\",
                 @"BedrockServerExeName=bedrock_server.exe",
-                @"BedrockVerInfo=bedrock_ver.ini",
                 @"WCFPortNumber=19134"
             };
             string[] Server = new string[]

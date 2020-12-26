@@ -361,6 +361,23 @@ namespace BedrockService
             _log.Info("Finished Backup");
         }
 
+        private static void DeleteFilesRecursively(DirectoryInfo source)
+        {
+            _log.Info("Starting Backup");
+            foreach (DirectoryInfo dir in source.GetDirectories())
+            {
+                DeleteFilesRecursively(dir);
+            }
+                
+            foreach (FileInfo file in source.GetFiles()) 
+            { 
+                 file.Delete();
+                 Directory.Delete(source.FullName);
+            }
+               
+            _log.Info("Finished Backup");
+        }
+
         private void RunStartupCommands()
         {
             foreach (string s in ServerConfig.StartupCommands.CommandText)

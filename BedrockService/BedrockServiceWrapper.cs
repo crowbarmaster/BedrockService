@@ -42,7 +42,6 @@ namespace BedrockService
 
         public BedrockServiceWrapper(bool throwOnStart, bool throwOnStop, bool throwUnhandled)
         {
-
             try
             {
                 string pattern = @"^Service_(.*)$";
@@ -64,10 +63,6 @@ namespace BedrockService
                             {
                                 config.WCFPortNumber = Convert.ToInt32(kvp.Value);
                             }
-                            if (kvp.Key.Equals("BedrockVerInfo"))
-                            {
-                                config.BedrockVerInfo = kvp.Value;
-                            }
                             if (kvp.Key.Equals("BedrockServerExeName"))
                             {
                                 config.BedrockServerExeName = kvp.Value;
@@ -75,6 +70,7 @@ namespace BedrockService
                             config.ShortName = TestMatch.Groups[1].Value;
                         }
                         bedrockServers.Add(new BedrockServerWrapper(config));
+                        Console.WriteLine("Added config!");
                     }
                 }
 
@@ -98,7 +94,7 @@ namespace BedrockService
             }
             catch (Exception e)
             {
-                Console.WriteLine("Error Instantiating BedrockServiceWrapper", e);
+                Console.WriteLine($"Error Instantiating BedrockServiceWrapper: {e.Message}");
             }
 
         }
@@ -193,7 +189,7 @@ namespace BedrockService
             }
             catch (Exception e)
             {
-                Console.WriteLine("Error Stopping BedrockServiceWrapper", e);
+                Console.WriteLine($"Error Stopping BedrockServiceWrapper {e.Message}");
                 return false;
             }
         }
@@ -220,7 +216,7 @@ namespace BedrockService
             }
             catch (Exception e)
             {
-                Console.WriteLine("Error Starting BedrockServiceWrapper", e);
+                Console.WriteLine($"Error Starting BedrockServiceWrapper {e.Message}");
                 return false;
             }
         }
@@ -269,6 +265,8 @@ namespace BedrockService
                         catch (Exception e)
                         {
                             Console.WriteLine($"ERROR: Got zipfile exception! {e.Message}");
+                            DeleteFilesRecursively(new DirectoryInfo(server.ServerConfig.BedrockServerExeLocation));
+                            ValidSettingsCheck();
                         }
                         string[] FileList = Directory.GetFiles($@"{server.ServerConfig.BedrockServerExeLocation.Substring(0, server.ServerConfig.BedrockServerExeLocation.Length - 1)}", "*", SearchOption.AllDirectories);
                         File.WriteAllLines($@"{server.ServerConfig.BedrockServerExeLocation}Filelist.ini", FileList);
@@ -407,6 +405,19 @@ namespace BedrockService
             }
 
         }
+
+        private static void DeleteFilesRecursively(DirectoryInfo source)
+        {
+            try
+            {
+                source.Delete(true);
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine($@"Error Deleting Dir: {e.Message}");
+            }
+        }
+
         public string[] WriteJSONFiles(string ShortName)
         {
             string[] output = new string[2];

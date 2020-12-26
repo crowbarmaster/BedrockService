@@ -9,11 +9,12 @@ namespace BedrockClient
     /// </summary>
     internal class ServerProcessHelper
     {
-        private readonly List<ServerInfo> _serverProcesses;
+        private readonly List<ServerInfo> _serverProcesses = new List<ServerInfo>();
 
         public ServerProcessHelper(List<ServerConfig> configList)
         {
-            _serverProcesses = configList.Select(x => new ServerInfo(x.WCFPortNumber)).ToList();
+            ServerInfo serverInfo = new ServerInfo(19134);
+            _serverProcesses.Add(serverInfo);
         }
 
         public void Run(string[] args)

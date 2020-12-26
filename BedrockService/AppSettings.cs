@@ -48,7 +48,6 @@ namespace BedrockService
         public string ServerPort6 { get; set; }
         public string BedrockServerExeLocation { get; set; }
         public string BedrockServerExeName { get; set; }
-        public string BedrockVerInfo { get; set; }
         public string BedrockServerConfigFile { get; set; }
         public string AcceptedMojangLic { get; set; }
         public string BackupFolderName { get; set; }
