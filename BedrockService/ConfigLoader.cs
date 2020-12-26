@@ -4,13 +4,14 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Reflection;
 
 namespace BedrockService
 {
     public static class ConfigLoader
     {
         public static Dictionary<string, Dictionary<string, string>> Configs;
-        public static string ConfigDir = $@"{Directory.GetCurrentDirectory()}\Configs";
+        public static string ConfigDir = $@"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\Configs"; // Get Executable directory for the root.
         public static string GlobalFile = $@"{ConfigDir}\Globals.conf";
         public static string DefaultFile = $@"{ConfigDir}\Default.conf";
 

@@ -9,43 +9,10 @@ namespace BedrockService
 {
     class Program
     {
-        public static Random rand = new Random();
-        public static string LogPath = $@"{Directory.GetCurrentDirectory()}\Logs\Logfile.log";
-
-        public static void LogSetup()
-        {
-            string LogPathRand = $@"{Directory.GetCurrentDirectory()}\Logs\Logfile_{rand.Next(111111, 999999)}.log";
-            if (File.Exists(LogPath))
-            {
-                File.Copy(LogPath, LogPathRand);
-                Thread.Sleep(100);
-            }
-            if (!Directory.Exists($@"{Directory.GetCurrentDirectory()}\Logs"))
-            {
-                Directory.CreateDirectory($@"{Directory.GetCurrentDirectory()}\Logs");
-            }
-            if (!File.Exists(LogPath))
-            {
-                File.Create(LogPath);
-                Thread.Sleep(100);
-            }
-        }
-
-    public static void AppendToLog (string TextToLog)
-        {
-            if(TextToLog != null)
-            {
-                string output = $"{TextToLog}\n";
-                File.AppendAllText(LogPath, output);
-                Thread.Sleep(100);
-            }
-        }
-
         static void Main(string[] args)
         {
 
             XmlConfigurator.Configure();
-            LogSetup();
             ConfigLoader.LoadConfigs();
             Updater.CheckUpdates().Wait();
 

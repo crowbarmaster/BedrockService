@@ -160,11 +160,6 @@ CommandDescription is meaningless, and can be the same for each, or unique to yo
 
 **************************************************************************************
 
-Currently, Running as a system service is broken for multi-server use. Investigating.
-
-**************************************************************************************
-_____________________________________________________________________________________________________________________________________________
-
 Original Readme:
 
 Windows Service Wrapper around Bedrock Server for Minecraft

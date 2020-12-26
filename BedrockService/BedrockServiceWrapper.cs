@@ -236,9 +236,12 @@ namespace BedrockService
                 }
                 foreach (var server in bedrockServers)
                 {
-                    if (server.ServerConfig.BedrockServerExeName != "bedrock_server.exe" && File.Exists(server.ServerConfig.BedrockServerExeLocation + "bedrock_server.exe") && !File.Exists(server.ServerConfig.BedrockServerExeLocation + server.ServerConfig.BedrockServerExeName))
+                    if (server.ServerConfig.BedrockServerExeName != "bedrock_server.exe" && File.Exists(server.ServerConfig.BedrockServerExeLocation + "bedrock_server.exe"))
                     {
-                        File.Delete(server.ServerConfig.BedrockServerExeLocation + server.ServerConfig.BedrockServerExeName);
+                        if (File.Exists(server.ServerConfig.BedrockServerExeLocation + server.ServerConfig.BedrockServerExeName))
+                        {
+                            File.Delete(server.ServerConfig.BedrockServerExeLocation + server.ServerConfig.BedrockServerExeName);
+                        }
                         File.Copy(server.ServerConfig.BedrockServerExeLocation + "bedrock_server.exe", server.ServerConfig.BedrockServerExeLocation + server.ServerConfig.BedrockServerExeName);
                         Console.WriteLine($@"Copied {server.ServerConfig.BedrockServerExeLocation + "bedrock_server.exe"} to {server.ServerConfig.BedrockServerExeLocation + server.ServerConfig.BedrockServerExeName}");
                     }
