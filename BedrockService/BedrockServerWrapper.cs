@@ -161,7 +161,6 @@ namespace BedrockService
         {
             try
             {
-                Console.WriteLine("Starting WCF server");
 
                 wcfConsoleServer = new WCFConsoleServer(process, GetCurrentConsole, ServerConfig.WCFPortNumber);
                 _log.Debug("Before process.WaitForExit()");
@@ -196,7 +195,7 @@ namespace BedrockService
             }
             catch (Exception ex)
             {
-                Debug.WriteLine("ApplicationWatcher MonitoredAppExists Exception: " + ex.StackTrace);
+                Console.WriteLine("ApplicationWatcher MonitoredAppExists Exception: " + ex.StackTrace);
                 return true;
             }
         }

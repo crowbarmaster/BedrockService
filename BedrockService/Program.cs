@@ -1,8 +1,5 @@
 ﻿using log4net.Config;
 using System;
-using System.IO;
-using System.Text;
-using System.Threading;
 using Topshelf;
 
 namespace BedrockService
@@ -14,8 +11,6 @@ namespace BedrockService
         {
 
             XmlConfigurator.Configure();
-            ConfigLoader.LoadConfigs();
-            Updater.CheckUpdates().Wait();
 
             var rc = HostFactory.Run(x =>
             {
@@ -28,8 +23,8 @@ namespace BedrockService
                 bool throwUnhandled = false;
                 x.Service(settings => new BedrockServiceWrapper(throwOnStart, throwOnStop, throwUnhandled), s =>
                 {
-                    s.BeforeStartingService(_ => Console.WriteLine("BeforeStart"));
-                    s.BeforeStoppingService(_ => Console.WriteLine("BeforeStop"));
+                    s.BeforeStartingService(_ => Console.WriteLine("Starting service..."));
+                    s.BeforeStoppingService(_ => Console.WriteLine("Stopping service..."));
 
                 });
 
@@ -41,7 +36,6 @@ namespace BedrockService
 
                 x.EnableServiceRecovery(src =>
                 {
-                    src.OnCrashOnly();
                     src.RestartService(delayInMinutes: 0);
                     src.RestartService(delayInMinutes: 1);
                     src.SetResetPeriod(days: 1);

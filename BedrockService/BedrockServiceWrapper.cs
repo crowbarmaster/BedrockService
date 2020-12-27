@@ -43,6 +43,7 @@ namespace BedrockService
 
         public BedrockServiceWrapper(bool throwOnStart, bool throwOnStop, bool throwUnhandled)
         {
+            LoadInit();
             try
             {
                 string pattern = @"^Service_(.*)$";
@@ -71,7 +72,6 @@ namespace BedrockService
                             config.ShortName = TestMatch.Groups[1].Value;
                         }
                         bedrockServers.Add(new BedrockServerWrapper(config));
-                        Console.WriteLine("Added config!");
                     }
                 }
 
@@ -211,7 +211,6 @@ namespace BedrockService
                     brs.Stopping = false;
                     brs.StartControl(hostControl);
                     Thread.Sleep(2000);
-                    Console.WriteLine($"AppName was: {brs.ServerConfig.BedrockServerExeName.Substring(0, brs.ServerConfig.BedrockServerExeName.Length - 4)}");
                 }
                 return true;
             }
@@ -244,7 +243,6 @@ namespace BedrockService
                             File.Delete(server.ServerConfig.BedrockServerExeLocation + server.ServerConfig.BedrockServerExeName);
                         }
                         File.Copy(server.ServerConfig.BedrockServerExeLocation + "bedrock_server.exe", server.ServerConfig.BedrockServerExeLocation + server.ServerConfig.BedrockServerExeName);
-                        Console.WriteLine($@"Copied {server.ServerConfig.BedrockServerExeLocation + "bedrock_server.exe"} to {server.ServerConfig.BedrockServerExeLocation + server.ServerConfig.BedrockServerExeName}");
                     }
                     if (!File.Exists(server.ServerConfig.BedrockServerExeLocation + server.ServerConfig.BedrockServerExeName))
                     {
@@ -437,7 +435,7 @@ namespace BedrockService
             }
             sb.Remove(sb.Length - 2, 2);
             sb.Append("\n]");
-            Console.WriteLine($"JSON Output was: {sb}");
+            
             output[0] = sb.ToString();
             sb = new StringBuilder();
             sb.Append("[\n");
@@ -450,9 +448,15 @@ namespace BedrockService
             }
             sb.Remove(sb.Length - 2, 2);
             sb.Append("\n]");
-            Console.WriteLine($"JSON Output was: {sb}");
+            
             output[1] = sb.ToString();
             return output;
+        }
+
+        private void LoadInit()
+        {
+            ConfigLoader.LoadConfigs();
+            Updater.CheckUpdates().Wait();
         }
     }
 }
