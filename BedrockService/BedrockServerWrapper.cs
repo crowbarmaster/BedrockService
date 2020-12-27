@@ -23,6 +23,8 @@ namespace BedrockService
         string loggedThroughput;
         StringBuilder consoleBufferServiceOutput = new StringBuilder();
         bool serverStarted = false;
+        int RestartLimit = 3;
+        int RestartCount = 0;
 
         const string worldsFolder = "worlds";
         const string startupMessage = "[INFO] Server started.";
@@ -217,7 +219,15 @@ namespace BedrockService
                 Thread.Sleep(5000);
                 if (!Stopping)
                 {
-                    Monitor();
+                    if(RestartCount < RestartLimit)
+                    {
+                        Monitor();
+                    }
+                    else
+                    {
+                        StopControl();
+                        Environment.Exit(1);
+                    }
                 }
             }
         }

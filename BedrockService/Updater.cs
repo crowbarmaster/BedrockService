@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net.Http;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -33,15 +34,15 @@ namespace BedrockService
             string Version = m.Groups[2].Value;
             client.Dispose();
 
-            if (File.Exists($@"{Directory.GetCurrentDirectory()}\bedrock_ver.ini"))
+            if (File.Exists($@"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\bedrock_ver.ini"))
             {
-                string LocalVer = File.ReadAllText($@"{Directory.GetCurrentDirectory()}\bedrock_ver.ini");
+                string LocalVer = File.ReadAllText($@"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\bedrock_ver.ini");
                 if (LocalVer != Version)
                 {
                     Console.WriteLine($"New version detected! Now fetching from {DownloadPath}...");
                     VersionChanged = true;
                     FetchBuild(DownloadPath).Wait();
-                    File.WriteAllText($@"{Directory.GetCurrentDirectory()}\bedrock_ver.ini", Version);
+                    File.WriteAllText($@"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\bedrock_ver.ini", Version);
                     return true;
                 }
             }
@@ -49,7 +50,7 @@ namespace BedrockService
             {
                 Console.WriteLine("Version ini file missing, fetching build to recreate...");
                 FetchBuild(DownloadPath).Wait();
-                File.WriteAllText($@"{Directory.GetCurrentDirectory()}\bedrock_ver.ini", Version);
+                File.WriteAllText($@"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\bedrock_ver.ini", Version);
                 return true;
             }
             return false;
@@ -57,10 +58,10 @@ namespace BedrockService
 
         public static async Task FetchBuild(string path)
         {
-            string ZipDir = $@"{Directory.GetCurrentDirectory()}\MCSFiles\Update.zip";
-            if (!Directory.Exists($@"{Directory.GetCurrentDirectory()}\MCSFiles"))
+            string ZipDir = $@"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\MCSFiles\Update.zip";
+            if (!Directory.Exists($@"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\MCSFiles"))
             {
-                Directory.CreateDirectory($@"{Directory.GetCurrentDirectory()}\MCSFiles");
+                Directory.CreateDirectory($@"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\MCSFiles");
             }
             if (File.Exists(ZipDir))
             {

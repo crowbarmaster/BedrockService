@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -263,7 +264,7 @@ namespace BedrockService
                         }
                         try
                         {
-                            ZipFile.ExtractToDirectory($@"{Directory.GetCurrentDirectory()}\MCSFiles\Update.zip", server.ServerConfig.BedrockServerExeLocation);
+                            ZipFile.ExtractToDirectory($@"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\MCSFiles\Update.zip", server.ServerConfig.BedrockServerExeLocation);
                         }
                         catch (Exception e)
                         {
@@ -293,7 +294,7 @@ namespace BedrockService
                             }
                             try
                             {
-                                ZipFile.ExtractToDirectory($@"{Directory.GetCurrentDirectory()}\MCSFiles\Update.zip", server.ServerConfig.BedrockServerExeLocation);
+                                ZipFile.ExtractToDirectory($@"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\MCSFiles\Update.zip", server.ServerConfig.BedrockServerExeLocation);
                             }
                             catch (Exception e)
                             {

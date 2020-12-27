@@ -9,6 +9,7 @@ namespace BedrockService
 {
     class Program
     {
+        public static bool DebugModeEnabled = false;
         static void Main(string[] args)
         {
 
@@ -38,12 +39,23 @@ namespace BedrockService
                 x.SetDisplayName("BedrockService");
                 x.SetServiceName("BedrockService");
 
+                x.EnableServiceRecovery(src =>
+                {
+                    src.OnCrashOnly();
+                    src.RestartService(delayInMinutes: 0);
+                    src.RestartService(delayInMinutes: 1);
+                    src.SetResetPeriod(days: 1);
+                });
+
             });
 
             var exitCode = (int)Convert.ChangeType(rc, rc.GetTypeCode());
-            Console.Write("Program is force-quitting. Press any key to exit.");
-            Console.Out.Flush();
-            Console.ReadLine();
+            if (DebugModeEnabled)
+            {
+                Console.Write("Program is force-quitting. Press any key to exit.");
+                Console.Out.Flush();
+                Console.ReadLine();
+            }
             Environment.ExitCode = exitCode;
         }
     }
