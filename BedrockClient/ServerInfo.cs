@@ -9,11 +9,17 @@ namespace BedrockClient
     /// </summary>
     internal class ServerInfo
     {
+        public string IPAddr { get; }
         public int Port { get; }
+        public string ShortName { get; }
 
-        public ServerInfo(int port)
+        public ServerInfo() { }
+
+        public ServerInfo(string addr, int port, string name)
         {
+            IPAddr = addr;
             Port = port;
+            ShortName = name;
         }
 
         /// <summary>
@@ -22,12 +28,12 @@ namespace BedrockClient
         public void StartProcess()
         {
             var process = new Process();
-            var info = new ProcessStartInfo {FileName = "BedrockClient", Arguments = $"{Port}"};
+            var info = new ProcessStartInfo {FileName = "BedrockClient", Arguments = $"{IPAddr} {Port}"};
 
             process.StartInfo = info;
             process.Start();
 
-            Console.WriteLine($"Opened new client window for port {Port}");
+            Console.WriteLine($"Opened new client window for port {IPAddr}:{Port}");
         }
 
         /// <summary>
@@ -65,12 +71,12 @@ namespace BedrockClient
         /// </summary>
         private void ConnectToServer()
         {
-            ClientConnector.Connect(Console.WriteLine, Port);
+            ClientConnector.Connect(Console.WriteLine, IPAddr, Port, ShortName);
 
             // start the connection with server to get output
             Thread outputThread = new Thread(ClientConnector.OutputThread) { Name = "ChildIO Output Console" };
 
-            outputThread.Start(new ThreadPayLoad(Console.WriteLine, Port));
+            outputThread.Start(new ThreadPayLoad(Console.WriteLine, IPAddr, Port, ShortName));
         }
 
         /// <summary>

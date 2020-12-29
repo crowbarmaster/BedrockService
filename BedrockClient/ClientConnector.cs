@@ -1,11 +1,6 @@
-﻿using BedrockService;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System;
 using System.ServiceModel;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using static BedrockClient.ThreadPayLoad;
 
 namespace BedrockClient
@@ -19,10 +14,12 @@ namespace BedrockClient
         /// </summary>
         /// <param name="consoleWriteLine"></param>
         /// <param name="portNumber">default is 19134</param>
-        public static void Connect(ConsoleWriteLineDelegate consoleWriteLine, int portNumber)
+        public static void Connect(ConsoleWriteLineDelegate consoleWriteLine, string addr, int portNumber, string name)
         {
             var binding = new NetTcpBinding();
-            var url = $"net.tcp://localhost:{portNumber}/MinecraftConsole";
+            binding.Security.Mode = SecurityMode.None;
+
+            var url = $"net.tcp://{addr}:{portNumber}/MinecraftConsole";
             var address = new EndpointAddress(url);
             var channelFactory =
                 new ChannelFactory<IWCFConsoleServer>(binding, address);
@@ -32,18 +29,18 @@ namespace BedrockClient
                 _server = channelFactory.CreateChannel();
                 if (_server == null)
                 {
-                    Console.WriteLine($"Trying to connect to {url}");
+                    Console.WriteLine($"Trying to connect to {url} on server {name}");
                 }
                 else
                 {
                     try
                     {
                         _server.GetVersion();
-                        consoleWriteLine($"Connection to '{url}' established.");
+                        consoleWriteLine($"Connection to '{url}' established on server {name}.");
                     }
-                    catch(System.ServiceModel.EndpointNotFoundException)
+                    catch(EndpointNotFoundException)
                     {
-                        consoleWriteLine($"Trying to connect to {url}");
+                        consoleWriteLine($"Trying to connect to {url} on server {name}");
                         _server = null;
                     }
                 }
@@ -70,11 +67,11 @@ namespace BedrockClient
                         threadPayload.ConsoleWriteLine(consoleOutput);
                     }
                 }
-                catch(System.ServiceModel.CommunicationException)
+                catch(CommunicationException)
                 {
                     // start connection attempts again
                     threadPayload.ConsoleWriteLine("Lost connection to server.");
-                    Connect(threadPayload.ConsoleWriteLine, threadPayload.PortNumber);
+                    Connect(threadPayload.ConsoleWriteLine, threadPayload.IPAddr, threadPayload.PortNumber, threadPayload.ShortName);
                 }
             }
         }
@@ -85,7 +82,7 @@ namespace BedrockClient
             {
                 _server.SendConsoleCommand(command);
             }
-            catch(System.ServiceModel.CommunicationObjectFaultedException)
+            catch(CommunicationObjectFaultedException)
             {
                 consoleWriteLine($"ERROR:Connection to server lost command '{command}' was not processed. Please try again.");
             }

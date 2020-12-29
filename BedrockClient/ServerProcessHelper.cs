@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using BedrockService;
 
 namespace BedrockClient
 {
@@ -9,12 +9,11 @@ namespace BedrockClient
     /// </summary>
     internal class ServerProcessHelper
     {
-        private readonly List<ServerInfo> _serverProcesses = new List<ServerInfo>();
+        private readonly List<ServerInfo> _serverProcesses = ConfigLoader.ServerInfo;
 
-        public ServerProcessHelper(List<ServerConfig> configList)
+        public ServerProcessHelper()
         {
-            ServerInfo serverInfo = new ServerInfo(19134);
-            _serverProcesses.Add(serverInfo);
+
         }
 
         public void Run(string[] args)

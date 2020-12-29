@@ -28,9 +28,12 @@ namespace BedrockService
             _currentConsole = currentConsole;
 
             var binding = new NetTcpBinding();
+            binding.Security.Mode = SecurityMode.None;
+
             var baseAddress = new Uri($"net.tcp://localhost:{portNumber}/MinecraftConsole");
 
             _serviceHost = new ServiceHost(typeof(WCFConsoleServer), baseAddress);
+            
 
             _serviceHost.AddServiceEndpoint(typeof(IWCFConsoleServer), binding, baseAddress);
             _serviceHost.Open();

@@ -73,7 +73,7 @@ namespace BedrockService
             }
             if (!ServerCheck)
             {
-                Console.WriteLine("Error: No server config files found! Regenerating default file...");
+                Console.WriteLine("Error: No server config files found or corrupt! Regenerating default file...");
                 CreateDefaultConfigs();
                 LoadConfigs();
             }

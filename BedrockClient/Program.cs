@@ -1,7 +1,4 @@
-﻿using BedrockService;
-using System;
-using System.IO;
-using System.Reflection;
+﻿using System;
 
 namespace BedrockClient
 {
@@ -11,7 +8,9 @@ namespace BedrockClient
         {
             Console.WriteLine("Minecraft Bedrock Service Console");
 
-            var helper = new ServerProcessHelper(AppSettings.Instance.ServerConfig);
+            ConfigLoader.LoadConfigs();
+
+            var helper = new ServerProcessHelper();
             helper.Run(args);
         }
     }
