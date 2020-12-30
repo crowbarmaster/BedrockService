@@ -236,14 +236,11 @@ namespace BedrockService
                 }
                 foreach (var server in bedrockServers)
                 {
-                    if (server.ServerConfig.BedrockServerExeName != "bedrock_server.exe" && File.Exists(server.ServerConfig.BedrockServerExeLocation + "bedrock_server.exe"))
+                    if (server.ServerConfig.BedrockServerExeName != "bedrock_server.exe" && File.Exists(server.ServerConfig.BedrockServerExeLocation + "bedrock_server.exe") && !File.Exists(server.ServerConfig.BedrockServerExeLocation + server.ServerConfig.BedrockServerExeName))
                     {
-                        if (File.Exists(server.ServerConfig.BedrockServerExeLocation + server.ServerConfig.BedrockServerExeName))
-                        {
-                            File.Delete(server.ServerConfig.BedrockServerExeLocation + server.ServerConfig.BedrockServerExeName);
-                        }
                         File.Copy(server.ServerConfig.BedrockServerExeLocation + "bedrock_server.exe", server.ServerConfig.BedrockServerExeLocation + server.ServerConfig.BedrockServerExeName);
                     }
+
                     if (!File.Exists(server.ServerConfig.BedrockServerExeLocation + server.ServerConfig.BedrockServerExeName))
                     {
                         if (File.Exists($@"{server.ServerConfig.BedrockServerExeLocation}FileList.ini"))
@@ -266,7 +263,8 @@ namespace BedrockService
                         }
                         catch (Exception e)
                         {
-                            Console.WriteLine($"ERROR: Got zipfile exception! {e.Message}");
+                            Console.WriteLine($"ERROR: Got zipfile exception! {e.Message}.\n!!Deleting entire directory!! Press Enter to continue...");
+                            Console.ReadLine();
                             DeleteFilesRecursively(new DirectoryInfo(server.ServerConfig.BedrockServerExeLocation));
                             ValidSettingsCheck();
                         }
