@@ -90,9 +90,33 @@ namespace BedrockService
 
         public void RunServer(HostControl hostControl)
         {
-            hostController = hostControl;
+                hostController = hostControl;
             try
             {
+                Console.WriteLine($@"App {ServerConfig.BedrockServerExeName.Substring(0, ServerConfig.BedrockServerExeName.Length - 4)} running?");
+                if (MonitoredAppExists(ServerConfig.BedrockServerExeName.Substring(0, ServerConfig.BedrockServerExeName.Length - 4)))
+                {
+                    Process[] processList = Process.GetProcessesByName(ServerConfig.BedrockServerExeName.Substring(0, ServerConfig.BedrockServerExeName.Length - 4));
+                    if (processList.Length != 0)
+                    {
+                        Console.WriteLine($@"App {ServerConfig.BedrockServerExeName.Substring(0, ServerConfig.BedrockServerExeName.Length - 4)} running!");
+
+                        foreach (Process process in processList)
+                        {
+                            try
+                            {
+                                process.Kill();
+                                Thread.Sleep(1000);
+                                Console.WriteLine($@"App {ServerConfig.BedrockServerExeName.Substring(0, ServerConfig.BedrockServerExeName.Length - 4)} killed?");
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine($"Killing proccess resulted in error: {e.Message}");
+                            }
+                        }
+                    }
+                }
+
                 if (File.Exists(ServerConfig.BedrockServerExeLocation + ServerConfig.BedrockServerExeName))
                 {
                     // Fires up a new process to run inside this one
