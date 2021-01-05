@@ -185,7 +185,6 @@ namespace BedrockService
         {
             try
             {
-
                 wcfConsoleServer = new WCFConsoleServer(process, GetCurrentConsole, ServerConfig.WCFPortNumber);
                 _log.Debug("Before process.WaitForExit()");
                 process.WaitForExit();
@@ -240,7 +239,7 @@ namespace BedrockService
             else
             {
                 Thread.Sleep(5000);
-                if (!Stopping)
+                if (!Stopping || !BackingUp)
                 {
                     if(RestartCount < RestartLimit)
                     {
@@ -352,27 +351,20 @@ namespace BedrockService
             {
 
                 BackingUp = true;
-                FileInfo exe = new FileInfo(ServerConfig.BedrockServerExeLocation);
+                FileInfo exe = new FileInfo(ServerConfig.BedrockServerExeLocation + ServerConfig.BedrockServerExeName);
 
                 if (ServerConfig.BackupFolderName.Length > 0)
                 {
-                    DirectoryInfo backupTo;
-                    if (Directory.Exists(ServerConfig.BackupFolderName))
+                    DirectoryInfo serverDir = new DirectoryInfo(ServerConfig.BedrockServerExeLocation.Substring(0, ServerConfig.BedrockServerExeLocation.Length - 1));
+                    DirectoryInfo backupTo = new DirectoryInfo($@"{ServerConfig.BackupFolderName}\{ServerConfig.ShortName}");
+                    if (!Directory.Exists(backupTo.FullName))
                     {
-                        backupTo = new DirectoryInfo(ServerConfig.BackupFolderName);
-                    }
-                    else if (exe.Directory.GetDirectories().Count(t => t.Name == ServerConfig.BackupFolderName) == 1)
-                    {
-                        backupTo = exe.Directory.GetDirectories().Single(t => t.Name == ServerConfig.BackupFolderName);
-                    }
-                    else
-                    {
-                        backupTo = exe.Directory.CreateSubdirectory(ServerConfig.BackupFolderName);
+                        Directory.CreateDirectory($@"{ServerConfig.BackupFolderName}\{ServerConfig.ShortName}");
                     }
 
-                    var sourceDirectory = exe.Directory.GetDirectories().Single(t => t.Name == worldsFolder);
-                    var targetDirectory = backupTo.CreateSubdirectory($"{worldsFolder}{DateTime.Now.ToString("yyyyMMddhhmmss")}");
-                    CopyFilesRecursively(sourceDirectory, targetDirectory);
+                    var targetDirectory = backupTo.CreateSubdirectory($"Backup_{DateTime.Now.ToString("yyyyMMddhhmmss")}");
+                    Console.WriteLine($"Backing up files for server {ServerConfig.ShortName}. Please wait!");
+                    CopyFilesRecursively(serverDir, targetDirectory);
 
 
                 }

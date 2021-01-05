@@ -69,6 +69,17 @@ namespace BedrockService
                             {
                                 config.BedrockServerExeName = kvp.Value;
                             }
+                            if (kvp.Key.Equals("BackupFolderName"))
+                            {
+                                if(kvp.Value == "Default")
+                                {
+                                    config.BackupFolderName = $@"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\Backups";
+                                }
+                                else
+                                {
+                                    config.BackupFolderName = kvp.Value;
+                                }
+                            }
                             config.ShortName = TestMatch.Groups[1].Value;
                         }
                         bedrockServers.Add(new BedrockServerWrapper(config));
@@ -152,6 +163,7 @@ namespace BedrockService
 
         private void Backup()
         {
+            Console.WriteLine("Service started backup manager.");
             foreach (var brs in bedrockServers.OrderByDescending(t => t.ServerConfig.Primary).ToList())
             {
                 brs.Stopping = true;
@@ -171,6 +183,7 @@ namespace BedrockService
                 Thread.Sleep(2000);
 
             }
+            Console.WriteLine("Backups have been completed.");
         }
 
         public bool Stop(HostControl hostControl)
