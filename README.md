@@ -49,6 +49,7 @@ Default Server File:
     [Service_Default]
     BedrockServerExeLocation=D:\MCSRV\MC1\
     BedrockServerExeName=bedrock_server.exe
+    BackupFolderName=Default
     WCFPortNumber=19134
 
     [Server_Default]
@@ -153,6 +154,12 @@ Translates to:
 	}
 ]
 ```
+
+
+Backups by default ("BackupFolderName=Default" in config) will backup servers to "backups\ServerShortName\Backup_DateString" unless changed to a custom path.
+
+Backup system backs up the entire minecraft folder, in the case that resource packs are install, they are also backed up.
+
 
 StartCmds are passable commandline startup options to this server. Each command defined in this format: CommandDescription=CommandToPass
 
