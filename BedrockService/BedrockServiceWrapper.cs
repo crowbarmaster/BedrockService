@@ -69,6 +69,10 @@ namespace BedrockService
                             {
                                 config.BedrockServerExeName = kvp.Value;
                             }
+                            if (kvp.Key.Equals("AdvancedBackup"))
+                            {
+                                config.AdvancedBackup = kvp.Value;
+                            }
                             if (kvp.Key.Equals("BackupFolderName"))
                             {
                                 if(kvp.Value == "Default")
@@ -91,6 +95,7 @@ namespace BedrockService
                 {
                     cronTimer = new System.Timers.Timer((shed.GetNextOccurrence(DateTime.Now) - DateTime.Now).TotalMilliseconds);
                     cronTimer.Elapsed += CronTimer_Elapsed;
+                    Console.WriteLine($"Backups Enabled, will be checked in: {((float)cronTimer.Interval / 1000)} seconds.");
                     cronTimer.Start();
                 }
 

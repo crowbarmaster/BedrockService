@@ -356,6 +356,7 @@ namespace BedrockService
                 if (ServerConfig.BackupFolderName.Length > 0)
                 {
                     DirectoryInfo serverDir = new DirectoryInfo(ServerConfig.BedrockServerExeLocation.Substring(0, ServerConfig.BedrockServerExeLocation.Length - 1));
+                    DirectoryInfo worldsDir = new DirectoryInfo($"{ServerConfig.BedrockServerExeLocation}worlds");
                     DirectoryInfo backupTo = new DirectoryInfo($@"{ServerConfig.BackupFolderName}\{ServerConfig.ShortName}");
                     if (!Directory.Exists(backupTo.FullName))
                     {
@@ -364,9 +365,14 @@ namespace BedrockService
 
                     var targetDirectory = backupTo.CreateSubdirectory($"Backup_{DateTime.Now.ToString("yyyyMMddhhmmss")}");
                     Console.WriteLine($"Backing up files for server {ServerConfig.ShortName}. Please wait!");
-                    CopyFilesRecursively(serverDir, targetDirectory);
-
-
+                    if(ServerConfig.AdvancedBackup == "false")
+                    {
+                        CopyFilesRecursively(worldsDir, targetDirectory);
+                    }
+                    else if (ServerConfig.AdvancedBackup == "true")
+                    {
+                         CopyFilesRecursively(serverDir, targetDirectory);
+                    }
                 }
             }
             catch (Exception e)
