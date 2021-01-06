@@ -52,6 +52,7 @@ namespace BedrockService
         public string AcceptedMojangLic { get; set; }
         public string BackupFolderName { get; set; }
         public string AdvancedBackup { get; set; }
+        public string MaxBackupCount { get; set; }
         public bool Primary { get; set; }
 
         public Command StartupCommands { get; set; }

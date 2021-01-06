@@ -73,6 +73,10 @@ namespace BedrockService
                             {
                                 config.AdvancedBackup = kvp.Value;
                             }
+                            if (kvp.Key.Equals("MaxBackupCount"))
+                            {
+                                config.MaxBackupCount = kvp.Value;
+                            }
                             if (kvp.Key.Equals("BackupFolderName"))
                             {
                                 if(kvp.Value == "Default")

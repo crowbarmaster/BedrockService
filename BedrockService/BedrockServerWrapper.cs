@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using Topshelf;
 using Topshelf.Logging;
@@ -357,13 +358,52 @@ namespace BedrockService
                 {
                     DirectoryInfo serverDir = new DirectoryInfo(ServerConfig.BedrockServerExeLocation.Substring(0, ServerConfig.BedrockServerExeLocation.Length - 1));
                     DirectoryInfo worldsDir = new DirectoryInfo($"{ServerConfig.BedrockServerExeLocation}worlds");
-                    DirectoryInfo backupTo = new DirectoryInfo($@"{ServerConfig.BackupFolderName}\{ServerConfig.ShortName}");
-                    if (!Directory.Exists(backupTo.FullName))
+                    DirectoryInfo backupDir = new DirectoryInfo($@"{ServerConfig.BackupFolderName}\{ServerConfig.ShortName}");
+                    if (!Directory.Exists(backupDir.FullName))
                     {
                         Directory.CreateDirectory($@"{ServerConfig.BackupFolderName}\{ServerConfig.ShortName}");
                     }
-
-                    var targetDirectory = backupTo.CreateSubdirectory($"Backup_{DateTime.Now.ToString("yyyyMMddhhmmss")}");
+                    int dirCount = backupDir.GetDirectories().Length; // this line creates a new int with a value derived from the number of directories found in the backups folder.
+                    try // use a try catch any time you know an error could occur.
+                    {
+                        if(dirCount >= Convert.ToInt32(ServerConfig.MaxBackupCount)) // Compare the directory count with the value set in the config. Values from config are stored as strings, and therfore must be converted to integer first for compare.
+                        {
+                            string pattern = $@"Backup_(.*)$"; // This is a regular expression pattern. If you would like to know more, Grab notepad++ and play with regex search, a lot of guides out there.
+                            Regex reg = new Regex(pattern); // Creates a new Regex class with our pattern loaded.
+                            
+                            List<long> Dates = new List<long>(); // creates a new list integer array named Dates, and initializes it.
+                            foreach(DirectoryInfo dir in backupDir.GetDirectories()) // Loop through the array of directories in backup folder. In this "foreach" loop, we name each entry in the array "dir" and then do something to it.
+                            {
+                                if (reg.IsMatch(dir.Name)) // Using regex.IsMatch will return true if the pattern matches the name of the folder we are working with. 
+                                {
+                                    Match match = reg.Match(dir.Name); // creates an instance of the match to work with.
+                                    Dates.Add(Convert.ToInt64(match.Groups[1].Value)); // if it was a match, we then pull the number we saved in the (.*) part of the pattern from the groups method in the match. Groups saves the entire match first, followed by anthing saved in parentheses. Because we need to compare dates, we must convert the string to an integer.
+                                }
+                            }
+                            long OldestDate = 0; // Create a new int to store the oldest date in.
+                            foreach (long date in Dates) // for each date in the Dates array....
+                            {
+                                if (OldestDate == 0) // if this is the first entry in Dates, OldestDate will still be 0. Set it to a date so compare can happen.
+                                {
+                                    OldestDate = date; // OldestDate now equals date.
+                                }
+                                else if (date < OldestDate) // If now the next entry in Dates is a smaller number than the previously set OldestDate, reset OldestDate to date.
+                                {
+                                    OldestDate = date; // OldestDate now equals date.
+                                }
+                            }
+                            Directory.Delete($@"{backupDir}\Backup_{OldestDate}", true); // After running through all directories, this string $@"{backupDir}\Backup_{OldestDate}" should now represent the folder that has the lowest/oldest date. Delete it. Supply the "true" after the directory string to enable recusive mode, removing all files and folders.
+                        }
+                    }
+                    catch (Exception e) // catch all exceptions here.
+                    {
+                        if (e.GetType() == typeof(FormatException)) // if the exception is equal a type of FormatException, Do the following... if this was a IOException, they would not match.
+                        {
+                            Console.WriteLine("Error in Config! MaxBackupCount must be nothing but a number!"); // this exception will be thrown if the string could not become a number (i.e. of there was a letter in the mix).
+                        }
+                    }
+                    
+                    var targetDirectory = backupDir.CreateSubdirectory($"Backup_{DateTime.Now.ToString("yyyyMMddhhmmss")}");
                     Console.WriteLine($"Backing up files for server {ServerConfig.ShortName}. Please wait!");
                     if(ServerConfig.AdvancedBackup == "false")
                     {
